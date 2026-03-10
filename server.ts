@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import { createServer as createViteServer } from "vite";
 import Database from "better-sqlite3";
 import path from "path";
@@ -7,7 +8,8 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const db = new Database("electro.db");
+const dbPath = path.join(__dirname, "electro.db");
+const db = new Database(dbPath);
 
 // Initialize database
 db.exec(`
@@ -67,11 +69,10 @@ if (settingsCount.count === 0) {
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT || 3000;
 
+  app.use(cors());
   app.use(express.json());
-
-  // API Routes
   app.get("/api/products", (req, res) => {
     const products = db.prepare("SELECT * FROM products").all();
     res.json(products);
